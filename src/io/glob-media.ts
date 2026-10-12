@@ -1,4 +1,4 @@
-import { globSync } from 'glob';
+import { sync as globSync } from 'glob';
 import { SUPPORTED_EXTENSIONS } from '../config/defaults';
 
 export function globMediaFiles(cwd: string = process.cwd()): string[] {
