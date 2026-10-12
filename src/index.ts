@@ -1,7 +1,11 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
-import { globSync } from 'glob';
+import { buildMasteringFilterChain } from './ffmpeg/filter-chain';
+import { buildOutputOptions } from './ffmpeg/output-options';
+import { globMediaFiles } from './io/glob-media';
+import { masteredOutputName } from './pipeline/output-name';
+import { ENCODER, RESOLUTIONS, SUPPORTED_EXTENSIONS } from './config/defaults';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora, { Ora } from 'ora';
@@ -17,35 +21,6 @@ import ffmpeg from 'fluent-ffmpeg';
  * - Contrast Adaptive Sharpening (CAS)
  * - Color Space Normalization & Enhancement (eq)
  */
-
-interface ResolutionConfig {
-  name: string;
-  value: {
-    w: number;
-    h: number;
-    label: string;
-  };
-}
-
-const CONFIG = {
-  SUPPORTED_EXTENSIONS: ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv'],
-  RESOLUTIONS: [
-    { name: '8K Ultra HD (7680x4320)', value: { w: 7680, h: 4320, label: '8K' } },
-    { name: '4K Ultra HD (3840x2160)', value: { w: 3840, h: 2160, label: '4K' } },
-    { name: '2K QHD (2560x1440)', value: { w: 2560, h: 1440, label: '2K' } },
-    { name: '1080p Full HD (1920x1080)', value: { w: 1920, h: 1080, label: '1080p' } },
-  ] as ResolutionConfig[],
-  ENCODER: {
-    PRESET: 'slow',
-    CRF: 16,
-    V_CODEC: 'libx265',
-    A_CODEC: 'copy',
-    PIX_FMT: 'yuv420p10le',
-    TAG: 'hvc1',
-    FLAGS: 'lanczos+accurate_rnd+bitexact',
-    X265_PARAMS: 'aq-mode=3:strong-intra-smoothing=0:psy-rd=2.0:psy-rdoq=1.0:rd=4',
-  },
-};
 
 class VideoMasterer {
   private spinner: Ora;
@@ -80,7 +55,7 @@ class VideoMasterer {
       const sourceFile = await this.promptSourceFile(files);
       const targetRes = await this.promptTargetResolution();
 
-      const outputFile = `${path.parse(sourceFile).name}_MASTERED_${targetRes.label}.mp4`;
+      const outputFile = masteredOutputName(sourceFile, targetRes.label);
       const outputPath = path.join(process.cwd(), outputFile);
 
       await this.handleFileCollision(outputPath, outputFile);
@@ -96,8 +71,7 @@ class VideoMasterer {
   }
 
   private scanMediaFiles(): string[] {
-    const pattern = `**/*.{${CONFIG.SUPPORTED_EXTENSIONS.join(',')}}`;
-    const files = globSync(pattern, { nocase: true });
+    const files = globMediaFiles();
 
     if (files.length === 0) {
       throw new Error('No supported video files detected in project tree.');
@@ -131,7 +105,7 @@ class VideoMasterer {
         type: 'list',
         name: 'resolution',
         message: 'Select target master resolution:',
-        choices: CONFIG.RESOLUTIONS,
+        choices: RESOLUTIONS,
         pageSize: 5,
       },
     ]);
@@ -166,29 +140,10 @@ class VideoMasterer {
   }
 
   private startMastering(input: string, output: string, res: any): void {
-    const filterStr = [
-      `scale=${res.w}:${res.h}:force_original_aspect_ratio=decrease:flags=${CONFIG.ENCODER.FLAGS}`,
-      `pad=${res.w}:${res.h}:(ow-iw)/2:(oh-ih)/2`,
-      'hqdn3d=1.5:1.5:6:6',
-      'cas=0.6',
-      'unsharp=3:3:0.8:3:3:0',
-      'eq=contrast=1.05:saturation=1.12',
-      `format=${CONFIG.ENCODER.PIX_FMT}`,
-    ].join(',');
+    const filterStr = buildMasteringFilterChain(res.w, res.h);
 
     ffmpeg(input)
-      .outputOptions([
-        '-vf',
-        filterStr,
-        `-c:v ${CONFIG.ENCODER.V_CODEC}`,
-        `-tag:v ${CONFIG.ENCODER.TAG}`,
-        `-preset ${CONFIG.ENCODER.PRESET}`,
-        `-crf ${CONFIG.ENCODER.CRF}`,
-        '-x265-params',
-        CONFIG.ENCODER.X265_PARAMS,
-        `-c:a ${CONFIG.ENCODER.A_CODEC}`,
-        '-movflags +faststart',
-      ])
+      .outputOptions(buildOutputOptions(filterStr))
       .output(output)
       .on('progress', (progress) => {
         const percent = progress.percent ? progress.percent.toFixed(1) : '0';
