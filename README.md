@@ -52,6 +52,10 @@ Enhancement and upscaling to 8K is a high-intensity computational task. For full
 feature films, ensure sufficient thermal headroom and disk space (HEVC Masters can reach
 50GB+ depending on source complexity).
 
+## Ethics
+
+Use only on systems and content you are **authorized** to access. See [SECURITY.md](./SECURITY.md).
+
 ## License
 
 Licensed under the [HackerX License](./LICENSE). Redistributions must retain copyright,
