@@ -1,60 +1,51 @@
-# Video Mastering Engine (v1.0.0)
+# Video_Enhance
 
-This is an industrial-grade high-resolution video upscaling and enhancement utility
-written in TypeScript. It leverages advanced FFmpeg filtering logic to elevate standard
-definition content into professional 4K/8K formats with enhanced texture retention and
-color precision.
+FFmpeg-driven interactive CLI for upscale, denoise, and HEVC mastering.
 
-## Advanced Visual Pipeline
+## Why this exists
 
-The engine applies the following processing sequence to ensure per-pixel perfection
-during upscaling:
+Batch video pipelines need repeatable filter chains. This tool wraps common mastering
+steps for local, authorized media you own or are licensed to process.
 
-1.  **Lanczos Mastering Scale**: Precise pixel interpolation using accurate-rounding and
-    bit-exact flags.
-2.  **3D Denosing (hqdn3d)**: High-quality spatial and temporal denoising to strip
-    sensor artifacts while preserving legitimate surface textures.
-3.  **Contrast Adaptive Sharpening (CAS)**: Perceptual detail reconstruction that
-    enhances the "pop" of the video without inducing sharpening halos or ringing.
-4.  **Chroma Normalization (eq)**: 5% contrast and 12% saturation normalization to align
-    with modern HDR-capable displays.
-5.  **10-bit Mastering (H.265 x265)**: Output encoded at 10-bit depth (HDR Ready) for
-    smooth gradients and minimal blocking artifacts.
+## Features
 
-## Usage Guide
+- Interactive workflow for scale, CAS, and encode presets
+- Extension and path helpers with unit tests
+- Prettier + Jest in CI
 
-Ensure you have FFmpeg installed (`brew install ffmpeg`) and in your system PATH.
-
-### Installation
+## Install
 
 ```bash
+git clone https://github.com/HackerX-offical/Video_Enhance.git
+cd Video_Enhance
 npm install
 ```
 
-### Execution
-
-Run the engine in interactive mode:
+## Quick start
 
 ```bash
 npm start
 ```
 
-## Technical Dependencies
+## Output
 
-- TypeScript 5.x
-- FFmpeg (libx265 enabled)
-- Inquirer (Interactive CLI)
-- Chalk & Ora (Status Logic)
+Processed video files next to inputs; console progress from FFmpeg invocations.
 
-## Performance Advisory
+## Develop
 
-Enhancement and upscaling to 8K is a high-intensity computational task. For full-length
-feature films, ensure sufficient thermal headroom and disk space (HEVC Masters can reach
-50GB+ depending on source complexity).
+```bash
+npm test
+npm run format:check
+```
+
+## Architecture
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for module layout and extension points.
 
 ## Ethics
 
-Use only on systems and content you are **authorized** to access. See [SECURITY.md](./SECURITY.md).
+Use only on systems and content you are **authorized** to test. See
+[SECURITY.md](./SECURITY.md).
 
 ## License
 

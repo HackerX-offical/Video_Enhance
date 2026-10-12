@@ -1,9 +1,39 @@
-# Video_Enhance architecture
+# Video_Enhance — architecture
 
-FFmpeg-driven mastering CLI (scale, denoise, CAS, HEVC encode).
+## Purpose
 
+Node CLI shells out to FFmpeg with composed filter graphs. Inputs are local media paths;
+outputs are mastered files. Non-goals: cloud transcoding or DRM circumvention.
+
+## High-level flow
+
+```mermaid
+flowchart LR
+  CLI[CLI] --> Core[Core engine]
+  Core --> Modules[Domain modules]
+  Modules --> Reporters[Reporters]
 ```
-src/
-  index.ts   # Interactive workflow
-  media.ts   # Extension helpers (tested)
-```
+
+## Module map
+
+| Path           | Responsibility                 |
+| -------------- | ------------------------------ |
+| `src/index.ts` | Interactive mastering workflow |
+| `src/media.ts` | Extension and path helpers     |
+
+## Extension
+
+1. Add a module under the appropriate `src/` folder.
+2. Register it in the orchestrator (if applicable).
+3. Add unit tests with mocks — no live network in unit tests.
+4. Run `npm test` and `npm run format:check`.
+
+## Testing strategy
+
+- **Unit**: mocked I/O, pure parsers, reporters.
+- **Integration** (if present): live targets documented in README; optional in CI or
+  scheduled.
+
+## Ethics & scope
+
+Authorized engagements only. See [SECURITY.md](./SECURITY.md).
