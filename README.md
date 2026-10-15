@@ -16,7 +16,7 @@ steps for local, authorized media you own or are licensed to process.
 ## Install
 
 ```bash
-git clone https://github.com/HackerX-offical/Video_Enhance.git
+git clone https://github.com/HackerX-official/Video_Enhance.git
 cd Video_Enhance
 npm install
 ```
