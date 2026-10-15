@@ -45,5 +45,13 @@
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HackerX-official/Video_Enhance.git"
+  },
+  "homepage": "https://github.com/HackerX-official/Video_Enhance#readme",
+  "bugs": {
+    "url": "https://github.com/HackerX-official/Video_Enhance/issues"
   }
 }
